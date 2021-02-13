@@ -40,3 +40,25 @@ impl Intersectable<f64> for Ground {
 		});
 	}
 }
+
+#[derive(Debug)]
+pub struct Sphere {
+	pub center: Vec3<f64>,
+	pub radius: f64
+}
+
+impl Intersectable<f64> for Sphere {
+	fn intersect(&self, ray:Ray<f64>) -> Option<Intersection<f64>> {
+		let center_ray = self.center - ray.ori;
+		let closest_approach_time = project_length(ray.dir, center_ray);
+		let closest_approach_point = ray.project(closest_approach_time);
+		let closest_approach_distance = distance(closest_approach_point, self.center);
+
+		if closest_approach_distance >= self.radius { return None; }
+
+		return Some(Intersection {
+			time: closest_approach_time,
+			color: Vec3::new(0., 0., 0.)
+		});
+	}
+}
