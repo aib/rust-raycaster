@@ -1,7 +1,9 @@
 mod rays;
-use rays::*;
+mod objects;
 
-#[derive(Debug)]
+use rays::*;
+use objects::*;
+
 struct View {
 	look: Ray<f64>,
 	up: Vec3<f64>,
@@ -10,35 +12,71 @@ struct View {
 	height: u32
 }
 
+trait SceneObject: Intersectable<f64> + std::fmt::Debug {}
+impl<T> SceneObject for T where T: Intersectable<f64> + std::fmt::Debug {}
+
+struct Scene {
+	objects: Vec<Box<dyn SceneObject>>
+}
+
 fn main() {
 	let view = View {
 		look: Ray {
-			ori: Vec3::new(0., 0., 0.),
+			ori: Vec3::new(0., 0., 5.),
 			dir: Vec3::new(0., 1., 0.)
 		},
 		up: Vec3::new(0., 0., 1.),
-		vfov: f64::to_radians(45.),
+		vfov: f64::to_radians(65.),
 		width: 10,
 		height: 10
 	};
 
-	let rays = generate_rays(view);
+	let mut scene = Scene {
+		objects: vec!()
+	};
 
-	for ray in rays { println!("{}", ray); }
+	scene.objects.push(Box::new(Ground {}));
+
+	fn conv_color(c:f64) -> u8 { (c * 255.) as u8 }
+
+	let rays_cast = generate_rays(&view).iter()
+		.map(|r| {
+			cast(
+				&scene,
+				Ray { ori: view.look.ori, dir: *r }
+			)
+		})
+		.collect::<Vec<Vec3<f64>>>();
+
+	for r in rays_cast {
+		println!("{}", r);
+	}
 }
 
-fn generate_rays(view:View) -> Vec<Vec3<f64>> {
+fn cast(scene:&Scene, ray:Ray<f64>) -> Vec3<f64> {
+	let mut intersections = scene.objects.iter()
+		.filter_map(|o| { o.intersect(ray) })
+		.collect::<Vec<Intersection<f64>>>();
+
+	intersections.sort_by(|a, b| a.time.partial_cmp(&b.time).unwrap());
+
+	return intersections
+		.first()
+		.map_or(Vec3::new(1., 1., 1.), |i| { i.color });
+}
+
+fn generate_rays(view:&View) -> Vec<Vec3<f64>> {
 	let hfov = view.width as f64 * view.vfov / view.height as f64;
 	let right = cross(view.look.dir, view.up);
 
 	let rotate_look = |axis:Vec3<f64>, fov:f64, max:u32, val:u32, look:Vec3<f64>| {
 		let normalized = (val as f64 * 2.) / ((max - 1) as f64) - 1.;
-		rotate(axis, normalized * fov, look)
+		rotate(axis, normalized * (fov / 2.), look)
 	};
 
 	let mut rays = Vec::new();
 
-	for y in 0..view.height {
+	for y in (0..view.height).rev() {
 		let y_rotated = rotate_look(right, view.vfov, view.height, y, view.look.dir);
 		for x in 0..view.width {
 			let rotated = rotate_look(-view.up, hfov, view.width, x, y_rotated);
