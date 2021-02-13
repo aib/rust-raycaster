@@ -27,8 +27,8 @@ fn main() {
 		},
 		up: Vec3::new(0., 0., 1.),
 		vfov: f64::to_radians(65.),
-		width: 10,
-		height: 10
+		width: 1280,
+		height: 960
 	};
 
 	let mut scene = Scene {
@@ -39,18 +39,17 @@ fn main() {
 
 	fn conv_color(c:f64) -> u8 { (c * 255.) as u8 }
 
-	let rays_cast = generate_rays(&view).iter()
+	let pixels = generate_rays(&view).iter()
 		.map(|r| {
 			cast(
 				&scene,
 				Ray { ori: view.look.ori, dir: *r }
 			)
 		})
-		.collect::<Vec<Vec3<f64>>>();
+		.flat_map(|c| { vec!(conv_color(c.x), conv_color(c.y), conv_color(c.z)) })
+		.collect::<Vec<u8>>();
 
-	for r in rays_cast {
-		println!("{}", r);
-	}
+	write_png(view.width, view.height, "/tmp/test.png", pixels);
 }
 
 fn cast(scene:&Scene, ray:Ray<f64>) -> Vec3<f64> {
@@ -63,6 +62,18 @@ fn cast(scene:&Scene, ray:Ray<f64>) -> Vec3<f64> {
 	return intersections
 		.first()
 		.map_or(Vec3::new(1., 1., 1.), |i| { i.color });
+}
+
+fn write_png(width:u32, height:u32, filename:&str, pixels:Vec<u8>) {
+	let f = std::fs::File::create(std::path::Path::new(filename));
+	let writer = std::io::BufWriter::new(f.unwrap());
+
+	let mut encoder = png::Encoder::new(writer, width, height);
+	encoder.set_color(png::ColorType::RGB);
+	encoder.set_depth(png::BitDepth::Eight);
+
+	encoder.write_header().unwrap()
+		.write_image_data(pixels.as_slice()).unwrap();
 }
 
 fn generate_rays(view:&View) -> Vec<Vec3<f64>> {
