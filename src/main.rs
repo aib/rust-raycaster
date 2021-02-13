@@ -34,6 +34,8 @@ fn main() {
 
 	scene.objects.push(Box::new(Ground {}));
 	scene.objects.push(Box::new(Sphere { center: Vec3::new(0., 80., 12.), radius: 10.}));
+	scene.objects.push(Box::new(Sphere { center: Vec3::new(20., 60., 12.), radius: 10.}));
+	scene.objects.push(Box::new(Sphere { center: Vec3::new(-30., 100., 50.), radius: 20.}));
 
 	fn conv_color(c:f64) -> u8 { (c * 255.) as u8 }
 
