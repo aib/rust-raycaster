@@ -1,6 +1,8 @@
+mod math;
 mod rays;
 mod objects;
 
+use math::*;
 use rays::*;
 use objects::*;
 
