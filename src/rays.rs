@@ -63,9 +63,19 @@ pub fn normalize <T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> + std
 	vec / norm(vec)
 }
 
+pub fn project_length <T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> + std::ops::Div<Output = T> + Sqrt + Copy> (target:Vec3<T>, source:Vec3<T>) -> T {
+	dot(source, normalize(target))
+}
+
 #[derive(Debug)]
 #[derive(Copy, Clone)]
 pub struct Ray<T> {
 	pub ori: Vec3<T>,
 	pub dir: Vec3<T>
+}
+
+impl <T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> + Copy> Ray<T> {
+	pub fn project(&self, t:T) -> Vec3<T> {
+		self.ori + self.dir * t
+	}
 }
