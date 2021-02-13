@@ -19,6 +19,13 @@ impl <T: std::ops::Add<Output = T> + Copy> std::ops::Add<Vec3<T>> for Vec3<T> {
 	}
 }
 
+impl <T: std::ops::Sub<Output = T> + Copy> std::ops::Sub<Vec3<T>> for Vec3<T> {
+	type Output = Vec3<T>;
+	fn sub(self, rhs:Vec3<T>) -> Self::Output {
+		Vec3 { x: self.x - rhs.x, y: self.y - rhs.y, z: self.z - rhs.z }
+	}
+}
+
 impl <T: std::ops::Neg<Output = T>> std::ops::Neg for Vec3<T> {
 	type Output = Vec3<T>;
 	fn neg(self) -> Self::Output {
