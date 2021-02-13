@@ -48,7 +48,7 @@ pub struct Sphere {
 }
 
 impl Intersectable<f64> for Sphere {
-	fn intersect(&self, _cast:&dyn Fn(Ray<f64>) -> Vec3<f64>, ray:Ray<f64>) -> Option<Intersection<f64>> {
+	fn intersect(&self, cast:&dyn Fn(Ray<f64>) -> Vec3<f64>, ray:Ray<f64>) -> Option<Intersection<f64>> {
 		let center_ray = self.center - ray.ori;
 		let closest_approach_time = project_length(ray.dir, center_ray);
 		let closest_approach_point = ray.project(closest_approach_time);
@@ -56,9 +56,19 @@ impl Intersectable<f64> for Sphere {
 
 		if closest_approach_distance >= self.radius { return None; }
 
+		let intersection_distance = (self.radius * self.radius + closest_approach_distance * closest_approach_distance).sqrt();
+		let first_hit_time = closest_approach_time - intersection_distance;
+
+		if first_hit_time < 0. { return None; }
+
+		let first_hit_point = ray.project(first_hit_time);
+		let normal = normalize(first_hit_point - self.center);
+
+		let casted = cast(Ray { ori: first_hit_point, dir: reflect(normal, ray.dir) });
+
 		return Some(Intersection {
 			time: closest_approach_time,
-			color: Vec3::new(0., 0., 0.)
+			color: casted * 0.9
 		});
 	}
 }
