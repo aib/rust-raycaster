@@ -12,11 +12,8 @@ struct View {
 	height: u32
 }
 
-trait SceneObject: Intersectable<f64> + std::fmt::Debug {}
-impl<T> SceneObject for T where T: Intersectable<f64> + std::fmt::Debug {}
-
 struct Scene {
-	objects: Vec<Box<dyn SceneObject>>
+	objects: Vec<Box<dyn Intersectable<f64>>>
 }
 
 fn main() {
@@ -44,6 +41,7 @@ fn main() {
 		.map(|r| {
 			cast(
 				&scene,
+				vec!(),
 				Ray { ori: view.look.ori, dir: *r }
 			)
 		})
@@ -53,9 +51,17 @@ fn main() {
 	write_png(view.width, view.height, "/tmp/test.png", pixels);
 }
 
-fn cast(scene:&Scene, ray:Ray<f64>) -> Vec3<f64> {
+fn cast(scene:&Scene, exceptions:Vec<&Box<dyn Intersectable<f64>>>, ray:Ray<f64>) -> Vec3<f64> {
 	let mut intersections = scene.objects.iter()
-		.filter_map(|o| { o.intersect(ray) })
+		.filter(|o| {
+			!exceptions.iter().any(|e| *o as *const Box<dyn Intersectable<f64>> == *e as *const Box<dyn Intersectable<f64>>)
+		})
+		.filter_map(|o| {
+			let rec_cast = |ray| {
+				cast(&scene, vec!(o), ray)
+			};
+			o.intersect(&rec_cast, ray)
+		})
 		.collect::<Vec<Intersection<f64>>>();
 
 	intersections.sort_by(|a, b| a.time.partial_cmp(&b.time).unwrap());

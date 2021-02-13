@@ -8,7 +8,7 @@ pub struct Intersection<T> {
 }
 
 pub trait Intersectable<T> {
-	fn intersect(&self, ray:Ray<T>) -> Option<Intersection<T>>;
+	fn intersect(&self, cast:&dyn Fn(Ray<T>) -> Vec3<T>, ray:Ray<T>) -> Option<Intersection<T>>;
 }
 
 #[derive(Debug)]
@@ -16,7 +16,7 @@ pub struct Ground {
 }
 
 impl Intersectable<f64> for Ground {
-	fn intersect(&self, ray:Ray<f64>) -> Option<Intersection<f64>> {
+	fn intersect(&self, _cast:&dyn Fn(Ray<f64>) -> Vec3<f64>, ray:Ray<f64>) -> Option<Intersection<f64>> {
 		let normal = Vec3::new(0., 0., 1.);
 		let plen = project_length(-normal, ray.dir);
 
@@ -48,7 +48,7 @@ pub struct Sphere {
 }
 
 impl Intersectable<f64> for Sphere {
-	fn intersect(&self, ray:Ray<f64>) -> Option<Intersection<f64>> {
+	fn intersect(&self, _cast:&dyn Fn(Ray<f64>) -> Vec3<f64>, ray:Ray<f64>) -> Option<Intersection<f64>> {
 		let center_ray = self.center - ray.ori;
 		let closest_approach_time = project_length(ray.dir, center_ray);
 		let closest_approach_point = ray.project(closest_approach_time);
