@@ -84,6 +84,11 @@ pub fn distance <T: Mul<Output=T> + Add<Output=T> + Sub<Output=T> + Sqrt + Copy>
 	(dx * dx + dy * dy + dz * dz).sqrt()
 }
 
+pub fn reflect <T: Mul<Output=T> + Add<Output=T> + Sub<Output=T> + Copy> (normal:Vec3<T>, incident:Vec3<T>) -> Vec3<T> {
+	let d = dot(incident, normal);
+	incident - (normal * (d + d))
+}
+
 #[derive(Debug)]
 #[derive(Copy, Clone)]
 pub struct Ray<T> {
