@@ -26,12 +26,18 @@ impl Intersectable<f64> for Ground {
 		let intersection_point = ray.project(intersection_time);
 
 		fn fmod(m:f64, n:f64) -> f64 { ((m % n) + n) % n }
+		fn clamp01(v:f64) -> f64 {
+			if v < 0.0 { return 0.0; }
+			if v > 1.0 { return 1.0; }
+			return v;
+		}
 
 		fn get_color(p:Vec3<f64>) -> Vec3<f64> {
 			let par_x = fmod(p.x, 10.0) < 5.0;
 			let par_y = fmod(p.y, 10.0) < 5.0;
+			let cz = clamp01(p.y / 50.0);
 
-			return if par_x ^ par_y { Vec3::new(0., 0., 1.) } else { Vec3::new(0., 1., 1.) }
+			return if par_x ^ par_y { Vec3::new(cz, 0., 1.) } else { Vec3::new(cz, 1., 1.) }
 		}
 
 		return Some(Intersection {
