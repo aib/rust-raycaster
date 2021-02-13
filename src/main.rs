@@ -72,7 +72,11 @@ fn cast(scene:&Scene, exceptions:Vec<&Box<dyn Intersectable<f64>>>, ray:Ray<f64>
 
 	return intersections
 		.first()
-		.map_or(Vec3::new(1., 1., 1.), |i| { i.color });
+		.map_or(Vec3::new(1., 1., 1.), |i| {
+			let att = i.time / 250.;
+			let falloff = clamp01(att * att);
+			mix(i.color, Vec3::new(1., 1., 1.), falloff)
+		});
 }
 
 fn write_png(width:u32, height:u32, filename:&str, pixels:Vec<u8>) {
