@@ -74,6 +74,13 @@ pub fn project_length <T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> 
 	dot(source, normalize(target))
 }
 
+pub fn distance <T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Sqrt + Copy> (a:Vec3<T>, b:Vec3<T>) -> T {
+	let dx = a.x - b.x;
+	let dy = a.y - b.y;
+	let dz = a.z - b.z;
+	(dx * dx + dy * dy + dz * dz).sqrt()
+}
+
 #[derive(Debug)]
 #[derive(Copy, Clone)]
 pub struct Ray<T> {
